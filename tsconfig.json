@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2020"],
+    "target": "es2020",
+    "module": "nodenext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "moduleResolution":"nodenext",
+    "paths":{
+      "@types/*":["../types/*"]
+    },
+    "typeRoots": ["./node_modules/@types", "./src/types/**/*"],
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    /* Type Safety */
+    "strict": true,                              
+    "noImplicitAny": true,                       
+    "strictNullChecks": true,                    
+    "strictPropertyInitialization": true,        
+    "noUnusedLocals": true,                      
+    "noUnusedParameters": true,                  
+    "noImplicitReturns": true,                   
+    "noFallthroughCasesInSwitch": true,         
+
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules","dist"]
+}
