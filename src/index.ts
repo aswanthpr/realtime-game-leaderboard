@@ -1,7 +1,7 @@
 
 import { createServer } from 'http';
 import app from "./app"
-import {initSocket} from "./socket/index"
+import {initSocket} from "./socket/socket"
 
 
 const httpServer = createServer(app);

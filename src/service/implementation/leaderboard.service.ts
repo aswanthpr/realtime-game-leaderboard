@@ -1,23 +1,27 @@
 import { Types } from "mongoose";
 import { startOfDay, addDays } from "date-fns";
 import { IplayerScore } from "../../models/playerScore.model";
-import { HttpResponse,HttpStatus } from "../../constants";
+import { HttpResponse, HttpStatus } from "../../constants";
 import type { IleaderboardRepository } from "../../repository/interface/leaderboard.repo.interface.ts";
 import { createHttpError } from "../../utils/http.error.util";
 import type { IleaderboardService } from "../interface/leaderboard.service.interface.ts";
-import { getIO } from "../../socket";
+import { getIO } from "../../socket/socket";
 import { GameMode, Region } from "../../types/types";
-import { Ipagination } from "../../types/interfaces";
-import { getRedis} from "../../configs";
+import { IDataWithPagination, Ipagination } from "../../types/interfaces";
+import { redisClient } from "../../app";
+
 
 export class LeaderboardService implements IleaderboardService {
-  constructor(private repo: IleaderboardRepository) {}
+  constructor(
+    private repo: IleaderboardRepository,
+    
+  ) {}
   async createPlayer(
     name: string,
     score: number,
     region: Region,
     mode: GameMode
-  ): Promise<IplayerScore|{}> {
+  ): Promise<IplayerScore | {}> {
     if (!name || !score || !region || !mode) {
       throw createHttpError(
         HttpStatus?.BAD_REQUEST,
@@ -50,7 +54,7 @@ export class LeaderboardService implements IleaderboardService {
       );
     }
 
-    getIO().emit("leaderboard:update", result );
+    getIO().emit("leaderboard:update", result);
     return result;
   }
   async updatePlayer(
@@ -72,8 +76,8 @@ export class LeaderboardService implements IleaderboardService {
       );
     }
 
-    getIO().emit("leaderboard:update",updateUser);
-    return updateUser
+    getIO().emit("leaderboard:update", updateUser);
+    return updateUser;
   }
 
   async getLeaderboard(
@@ -83,18 +87,17 @@ export class LeaderboardService implements IleaderboardService {
     page: number,
     sort: "asc" | "desc"
   ): Promise<{ data: IplayerScore[] | []; pagination: Ipagination }> {
-    const redis = getRedis();
+ 
     //cache key
     const cacheKey = `leaderboard:${mode}:${region}:${limit}:${page}:${sort}`;
 
-    const cached = await redis.get(cacheKey);
-
-    //try to take from the cache
+    const cached = await redisClient?.get(cacheKey)  
+  
     if (cached) {
-      console.log("⚡ Cache hit:", cacheKey);
-      const parsed = JSON.parse(cached);
-      return parsed;
+      console.log("⚡ Cache hit:");
+      return cached as unknown as IDataWithPagination;
     }
+
     const { data, total } = await this.repo.topTen(
       mode,
       region,
@@ -109,9 +112,12 @@ export class LeaderboardService implements IleaderboardService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+
     const response = { data, pagination };
-    //caching for 1 minutes
-    await redis.set(cacheKey, JSON.stringify(response), "EX", 60);
+
+    // Cache whole response for 1 minutes
+    await redisClient.set(cacheKey, JSON.stringify(response),"EX", 60);
+
     getIO().emit("leaderboard:fetch", { data, pagination });
     return response;
   }
