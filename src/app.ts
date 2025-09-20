@@ -1,31 +1,33 @@
-import express ,{type Application,Response} from 'express';
+import express ,{type Application,Response, Request} from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import morgan from 'morgan';
 import compression from "compression";
 import leaderboard from './routers/leaderboard.routes'
-import { errorHandler } from './middlewares/error.middleware';
+import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 import { connectDb ,initRedis} from './configs';
-import rateLimit from 'express-rate-limit';
+
 import { httpCorsConfig } from './middlewares/index';
 
 const app:Application = express();
 export const  redisClient  = initRedis();
 connectDb();
 
+app.set("trust proxy", 1);
 app.use(cors(httpCorsConfig));
 app.use(compression());
-app.use(rateLimit())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-app.get("/health", (_req, res:Response) => {
-  res.send("API health is perfect...");
+app.get("/", (_req:Request, res:Response) => {
+  res.send("✅ Leaderboard API is running");
 });
 
 
+
 app.use("/leaderboard", leaderboard );
+app.use(notFoundHandler)
 app.use(errorHandler);
 
 export default app;

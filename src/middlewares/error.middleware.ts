@@ -23,3 +23,12 @@ export const errorHandler = (
 
     res.status(statusCode).json({error: message});
 };
+
+export function notFoundHandler(req: Request, _res: Response, next: NextFunction) {
+  const error = new HttpError(HttpStatus?.NOT_FOUND,
+    `🔎 The route [${req.method}] ${req.originalUrl} was not found on this server.`,
+    
+  );
+  next(error); 
+}
+

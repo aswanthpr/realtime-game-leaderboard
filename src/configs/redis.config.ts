@@ -3,9 +3,10 @@ import { Redis } from "ioredis";
 let redis: Redis | null = null;
 export const initRedis = (): Redis => {
   if (!redis) {
-      redis =  new Redis(process.env["REDIS_URL"]!,{
-    db: 0,
-  })
+    redis = new Redis(process.env["REDIS_URL"]!, {
+      db: 0,
+      enableReadyCheck: false,
+    });
 
     redis
       .on("connect", () => console.log("✅ Redis connected"))
