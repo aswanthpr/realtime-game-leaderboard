@@ -32,7 +32,7 @@ export class LeaderboardController {
         .status(HttpStatus?.OK)
         .json({
           success: true,
-          message: HttpResponse?.RESOURCE_FOUND,
+          message: data?.length > 0 ?HttpResponse?.RESOURCE_FOUND:HttpResponse?.NO_LEADERBOARD_DATA,
           data,
           pagination,
         });

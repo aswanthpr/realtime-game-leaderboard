@@ -72,7 +72,7 @@ export class LeaderboardService implements IleaderboardService {
     if (!updateUser) {
       throw createHttpError(
         HttpStatus?.BAD_REQUEST,
-        HttpResponse?.FAILED_TO_UPDATE
+        HttpResponse?.USER_NOT_FOUND
       );
     }
 
